@@ -1,0 +1,66 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerMovement : MonoBehaviour
+{
+    [SerializeField] private float moveSpeed = 2f;
+    [SerializeField] private float jumpSpeed = 2f;
+
+    Vector2 moveInput;
+    Rigidbody2D myRigidbody;
+    Animator myAnimator;
+    CapsuleCollider2D myCapsuleCollider;
+
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Start()
+    {
+        myRigidbody = GetComponent<Rigidbody2D>();
+        myAnimator = GetComponent<Animator>();
+        myCapsuleCollider = GetComponent<CapsuleCollider2D>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Run();
+        FlipSprite();
+    }
+
+    void OnMove(InputValue value)
+    {
+        moveInput = value.Get<Vector2>();
+    }
+
+    void OnJump(InputValue value) {
+
+        if (!myCapsuleCollider.IsTouchingLayers(LayerMask.GetMask("Ground")))
+        {
+            return;
+        }
+
+        if (value.isPressed)
+        {
+            myRigidbody.linearVelocity += new Vector2(0f,jumpSpeed);
+        }
+    }
+
+    void Run() {
+        Vector2 playerVelocity = new Vector2(moveInput.x * moveSpeed, myRigidbody.linearVelocity.y);
+        myRigidbody.linearVelocity = playerVelocity;
+
+        bool hasHorizontalSpeed = Mathf.Abs(myRigidbody.linearVelocity.x) > Mathf.Epsilon; ;
+        myAnimator.SetBool("isRunning", hasHorizontalSpeed);
+
+    }
+
+    void FlipSprite()
+    {
+        bool hasHorizontalSpeed = Mathf.Abs(myRigidbody.linearVelocity.x) > Mathf.Epsilon; ;
+
+        if (hasHorizontalSpeed)
+        {
+            transform.localScale = new Vector2(Mathf.Sign(myRigidbody.linearVelocity.x), 1f);
+        }
+
+    }
+}
